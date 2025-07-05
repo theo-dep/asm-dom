@@ -37,56 +37,30 @@ FILES = \
 	src/cpp/asm-dom.cpp \
 	src/cpp/asm-dom-server.cpp
 
-BC = compiled/asm-dom.bc
-
 CFLAGS = \
+	-std=c++23 \
 	-O3 \
-	--bind \
 	-Wall \
 	-Werror \
-	-Wall \
+	-pedantic \
 	-Wno-deprecated \
 	-Wno-parentheses \
-	-Wno-format
+	-Wno-format \
+	-Wno-dollar-in-identifier-extension \
+	-Wno-embedded-directive
 
-WASM_OPTIONS = \
-	-O3 \
-	--bind \
-	--memory-init-file 0 \
-	--llvm-lto 3 \
-	--llvm-opts 3 \
-	--js-opts 1 \
-	--closure 1 \
-	-s ENVIRONMENT=node \
-	-s MODULARIZE=1 \
-	-s ALLOW_MEMORY_GROWTH=1 \
-	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
-	-s ABORTING_MALLOC=1 \
-	-s NO_EXIT_RUNTIME=1 \
-	-s NO_FILESYSTEM=1 \
-	-s DISABLE_EXCEPTION_CATCHING=2 \
-	-s BINARYEN=1 \
-	-s EXPORTED_RUNTIME_METHODS=[\'UTF8ToString\'] \
-	-s BINARYEN_TRAP_MODE=\'allow\'
-
-ASMJS_OPTIONS = \
-	-O3 \
-	--bind \
-	--memory-init-file 0 \
-	--llvm-lto 3 \
-	--llvm-opts 3 \
-	--js-opts 1 \
-	--closure 1 \
-	-s ENVIRONMENT=node \
-	-s MODULARIZE=1 \
-	-s AGGRESSIVE_VARIABLE_ELIMINATION=1 \
-	-s ELIMINATE_DUPLICATE_FUNCTIONS=1 \
-	-s ABORTING_MALLOC=1 \
-	-s NO_EXIT_RUNTIME=1 \
-	-s NO_FILESYSTEM=1 \
-	-s DISABLE_EXCEPTION_CATCHING=2 \
-	-s EXPORTED_RUNTIME_METHODS=[\'UTF8ToString\'] \
-	-s WASM=0
+EMCC_OPTIONS = \
+	-Wno-unused-command-line-argument \
+	-lembind \
+	-sENVIRONMENT=node \
+	-sMODULARIZE=1 \
+	-sALLOW_MEMORY_GROWTH=1 \
+	-sABORTING_MALLOC=1 \
+	-sNO_EXIT_RUNTIME=1 \
+	-sNO_FILESYSTEM=1 \
+	-sDISABLE_EXCEPTION_CATCHING=2 \
+	-sBINARYEN=1 \
+	-sEXPORTED_RUNTIME_METHODS=[\'UTF8ToString\']
 
 .PHONY: all install clean lint test test_js test_watch build
 
@@ -108,37 +82,38 @@ test_js:
 	npx cross-env BABEL_ENV=commonjs TEST_ENV=node mocha --require babel-register test/js/toHTML.spec.js
 	npx cross-env BABEL_ENV=commonjs nyc --require babel-register mocha --recursive
 
-build: compiled/asm-dom.a $(BC) compiled/asm-dom.o $(COMPILEDASMJS)/asm-dom.asm.js $(COMPILEDWASM)/asm-dom.js $(TESTCPP) $(LIBS) $(ES) $(UMDJS)
+build: $(COMPILEDASMJS)/asm-dom.asm.js $(COMPILEDWASM)/asm-dom.js $(TESTCPP) $(LIBS) $(ES) $(UMDJS)
 	npx ncp $(SRCDIR)/cpp $(CPPDIR)
 
 $(TESTCPP): $(SRCSCPP) $(TEST_FILES)
 	emcc \
 		-DASMDOM_TEST \
 		$(CFLAGS) \
-		$(ASMJS_OPTIONS) \
+		$(EMCC_OPTIONS) \
+		-sWASM=0 \
 		$(FILES) \
 		$(TEST_FILES) \
 		-o $@
 
 .SECONDEXPANSION:
-$(COMPILED)/asm-dom.%: $(SRCSCPP) | $$(@D)
+$(COMPILEDASMJS)/asm-dom.asm.js: $(SRCSCPP) | $$(@D)
 	emcc \
 		-DASMDOM_JS_SIDE \
 		$(CFLAGS) \
+		$(EMCC_OPTIONS) \
+		-sWASM=0 \
 		$(FILES) \
 		src/js/index.cpp \
 		-o $@
 
-$(COMPILEDASMJS)/asm-dom.asm.js: $(BC) | $$(@D)
+$(COMPILEDWASM)/asm-dom.js: $(SRCSCPP) | $$(@D)
 	emcc \
-		$(ASMJS_OPTIONS) \
-		$(BC) \
-		-o $@
-
-$(COMPILEDWASM)/asm-dom.js: $(BC) | $$(@D)
-	emcc \
-		$(WASM_OPTIONS) \
-		$(BC) \
+		-DASMDOM_JS_SIDE \
+		$(CFLAGS) \
+		$(EMCC_OPTIONS) \
+		-sWASM=1 \
+		$(FILES) \
+		src/js/index.cpp \
 		-o $@
 
 $(ESDIR)/%: $(SRCDIR)/% | $$(@D)

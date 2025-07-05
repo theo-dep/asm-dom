@@ -62,6 +62,7 @@
     "eslint-plugin-jsx-a11y": "4.0.0",
     "eslint-plugin-react": "6.10.3",
     "expect": "1.20.2",
+    "iltorb": "^2.4.5",
     "istanbul": "0.4.5",
     "jsdom": "11.5.1",
     "knuth-shuffle": "1.0.1",

@@ -73,7 +73,7 @@ void shouldHaveATag() {
 void shouldHaveTheCorrectNamespace() {
 	std::string svgNamespace = "http://www.w3.org/2000/svg";
 	VNode* vnode = h("div",
-		h("div", 
+		h("div",
 			Data(
 				Attrs {
 					{"ns", svgNamespace}
@@ -932,7 +932,7 @@ std::vector<int> shuffle(std::vector<int>& arr, int elms) {
 	}
 	for (int n = 0; n < elms; ++n) {
 		int i = rand() % elms;
-		
+
 		int temp = newArr[n];
 		newArr[n] = newArr[i];
 		newArr[i] = temp;
@@ -947,7 +947,7 @@ void shouldHandleRandomShuffles() {
 	std::vector<std::string> opacities;
 	int elms = 14;
 	int samples = 5;
-	
+
 	arr.reserve(elms);
 	opacities.reserve(elms);
 	for (n = 0; n < elms; ++n) {
@@ -1092,19 +1092,19 @@ void shouldHandleRandomShufflesWithNullChildren() {
 		for (j = 0; j < len; ++j) {
 			r = rand() % 100;
 			if (r < 50) arr[j] = j;
-			else arr[j] = NULL;
+			else arr[j] = 0;
 		}
 		std::vector<int> shufArr = shuffle(arr, len);
 		Children children = Children();
 		for (j = 0; j < len; ++j) {
-			children.push_back(shufArr[j] == NULL ? NULL : h(std::string("span"), std::to_string(shufArr[j])));
+			children.push_back(shufArr[j] == 0 ? 0 : h(std::string("span"), std::to_string(shufArr[j])));
 		}
 		vnode2 = h("div", children);
 		patch(vnode1, vnode2);
 		emscripten::val elm = getBodyFirstChild();
 		r = 0;
 		for (j = 0; j < len; ++j) {
-			if (shufArr[j] != NULL) {
+			if (shufArr[j] != 0) {
 				assertEquals(elm["children"][std::to_string(r)]["innerHTML"], emscripten::val(std::to_string(shufArr[j])));
 				++r;
 			}
@@ -1655,7 +1655,7 @@ void shouldCallRefWithDOMNode() {
 
 	VNode* vnode2 = h("div");
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 3);
 
 	deleteVNode(vnode2);
@@ -1674,7 +1674,7 @@ void shouldCallRefOnAdd() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	deleteVNode(vnode1);
@@ -1693,12 +1693,12 @@ void shouldCallRefOnRemove() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div");
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 3);
 
 	deleteVNode(vnode2);
@@ -1717,12 +1717,12 @@ void shouldCallRefOnRefRemoveItself() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div", h("div"));
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 3);
 
 	deleteVNode(vnode2);
@@ -1741,7 +1741,7 @@ void shouldNotCallRefOnUpdate() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div",
@@ -1754,7 +1754,7 @@ void shouldNotCallRefOnUpdate() {
 		)
 	);
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 2);
 
 	deleteVNode(vnode2);
@@ -1776,7 +1776,7 @@ void shouldCallRefOnChangeLambdaLambda() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div",
@@ -1792,7 +1792,7 @@ void shouldCallRefOnChangeLambdaLambda() {
 		)
 	);
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 4);
 
 	deleteVNode(vnode2);
@@ -1814,7 +1814,7 @@ void shouldCallRefOnChangePointerLambda() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div",
@@ -1827,7 +1827,7 @@ void shouldCallRefOnChangePointerLambda() {
 		)
 	);
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 4);
 
 	deleteVNode(vnode2);
@@ -1846,7 +1846,7 @@ void shouldCallRefOnChangePointerPointer() {
 		)
 	);
 	patch(getRoot(), vnode1);
-	
+
 	assert(refCount == 2);
 
 	VNode* vnode2 = h("div",
@@ -1859,7 +1859,7 @@ void shouldCallRefOnChangePointerPointer() {
 		)
 	);
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 4);
 
 	deleteVNode(vnode2);
@@ -1881,7 +1881,7 @@ void shouldCallRefOnUpdateIfRefIsAdded() {
 		)
 	);
 	patch(vnode1, vnode2);
-	
+
 	assert(refCount == 2);
 
 	deleteVNode(vnode2);

@@ -190,13 +190,13 @@ void shouldOmitCallbacks() {
 void shouldHandleInnerHTML() {
 	VNode* vnode = h("div",
 		Props {
-			{"innerHTML", emscripten::val(std::string(u8"<p>a text 字à</p>"))}
+			{"innerHTML", emscripten::val(std::u8string(u8"<p>a text 字à</p>"))}
 		}
 	);
 
 	assert(
-		toHTML(vnode) ==
-		std::string(u8"<div><p>a text 字à</p></div>")
+		reinterpret_cast<const char8_t*>(toHTML(vnode).data()) ==
+		std::u8string(u8"<div><p>a text 字à</p></div>")
 	);
 };
 
