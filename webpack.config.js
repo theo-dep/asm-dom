@@ -1,10 +1,16 @@
 var webpack = require('webpack');
 var resolve = require('path').resolve;
+var fs = require('fs');
 var BrotliPlugin = require('brotli-webpack-plugin');
 var CompressionPlugin = require('compression-webpack-plugin');
 
 module.exports = (env) => {
   env = env || {};
+
+  const wasmPathEntry = env.find(entry => entry.startsWith('WASM_PATH='));
+  const wasmPath = wasmPathEntry ? wasmPathEntry.split('=')[1] : null;
+  const wasmBuffer = Buffer.from(fs.readFileSync(resolve(wasmPath + '/asm-dom.wasm')), 'binary').toString('base64')
+
   var addPlugin = (add, plugin) => add ? plugin : undefined;
   var ifProd = plugin => addPlugin(env.prod, plugin);
   var removeEmpty = array => array.filter(i => !!i);
@@ -33,7 +39,12 @@ module.exports = (env) => {
         quiet: true,
       })),
       new webpack.DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(ifProd('production') || 'development'),
+        process: {
+          env: {
+            NODE_ENV: JSON.stringify(ifProd('production') || 'development'),
+            WASM_BUFFER: JSON.stringify(wasmBuffer)
+          }
+        }
       }),
       ifProd(new webpack.optimize.UglifyJsPlugin({
         compress: {

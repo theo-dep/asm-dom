@@ -33,21 +33,8 @@ export default (config) => {
   config.clearMemory = config.clearMemory === undefined ? true : config.clearMemory;
   config.unsafePatch = config.unsafePatch === undefined ? false : config.unsafePatch;
 
-  let result;
-  if (
-    (
-      config.useWasm === true ||
-      (typeof window !== 'undefined' && 'WebAssembly' in window) ||
-      (typeof global !== 'undefined' && 'WebAssembly' in global)
-    ) &&
-    config.useAsmJS !== true
-  ) {
-    result = import('./loadWasm').then(x => x.default(config));
-  } else {
-    result = import('../../compiled/asmjs/asm-dom.asm.js');
-  }
-
-  return result
+  return import('./loadWasm')
+    .then(x => x.default(config))
     .then(factory =>
       factory(config).then((lib) => {
         lib.reset();

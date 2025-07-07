@@ -123,7 +123,7 @@ $(LIBDIR)/%: $(SRCDIR)/% | $$(@D)
 	npx cross-env BABEL_ENV=commonjs babel $< --out-file $@
 
 $(UMDJS): $(SRCS) | $$(@D)
-	npx cross-env BABEL_ENV=commonjs webpack --env.prod src/js/index.js $@
+	npx cross-env BABEL_ENV=commonjs webpack --env.prod --env WASM_PATH=$(COMPILEDWASM) src/js/index.js $@
 
 $(TREE): %:
 	npx mkdirp $@

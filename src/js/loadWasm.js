@@ -1,21 +1,22 @@
-// eslint-disable-next-line
-import preval from 'babel-plugin-preval/macro';
-
-const base64 = preval`
-  var fs = require('fs');
-  module.exports = fs.readFileSync(__dirname + '/../../compiled/wasm/asm-dom.wasm', 'base64');
-`;
-const createBuffer = (...params) => {
-  if (Buffer.from) return Buffer.from(...params);
-  return new Buffer(...params);
-};
-const binary = createBuffer(base64, 'base64').toString('binary');
-const bytes = new Uint8Array(binary.length);
-for (let i = 0; i < binary.length; ++i) {
-  bytes[i] = binary.charCodeAt(i);
+function asciiToBinary(str) {
+  if (typeof atob === 'function') {
+    // this works in the browser
+    return atob(str)
+  } else {
+    // this works in node
+    return Buffer.from(str, 'base64').toString('binary');
+  }
 }
+
+const wasmBuffer = process.env.WASM_BUFFER;
+var binaryString = asciiToBinary(wasmBuffer);
+var bytes = new Uint8Array(binaryString.length);
+for (var i = 0; i < binaryString.length; i++) {
+  bytes[i] = binaryString.charCodeAt(i);
+}
+
 const wasmBinary = new Uint8Array(bytes.buffer);
-const wasmGlueCode = require('../../compiled/wasm/asm-dom.js');
+const wasmGlueCode = require(wasmPath + '/asm-dom.js');
 
 export default (config) => {
   config.wasmBinary = wasmBinary;
